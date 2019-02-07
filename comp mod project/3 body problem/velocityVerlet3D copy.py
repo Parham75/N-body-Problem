@@ -48,7 +48,7 @@ def force_dw(particle1, particle2):
 
 '''
 def make_pyplot(x, y, label_y):
-    """
+    ""
     Method to make plots of two lists of numbers
     where the first is the time.
 
@@ -136,7 +136,7 @@ def main(argv1, argv2, argv3):
 
         # Increase time
         time = time + dt
-        
+
 
         # Append information to data lists
         time_list.append(time)
@@ -146,7 +146,7 @@ def main(argv1, argv2, argv3):
         outfile.write("{0:f} {1:f} {2:12f}\n".format(time,pos_list))
 
     # Post-simulation:
-    
+
     # Close all files
     outfile.close()
     input_file.close()
