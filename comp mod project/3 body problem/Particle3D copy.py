@@ -39,6 +39,7 @@ class Particle3D(object):
         self.mass = mass
         self.label = label
     
+
     def __str__(self):
         """
         Define output format.
@@ -49,6 +50,11 @@ class Particle3D(object):
 
         return self.label + " x = " + str(self.position[0]) + ", y = " + str(self.position[1]) + ", z = " + str(self.position[2])
     
+    def mass(self):
+
+
+        return self.mass
+
     def kinetic_energy(self):
         """
         Return kinetic energy as
@@ -59,7 +65,7 @@ class Particle3D(object):
 
     # Time integration methods
 
-    def leap_velocity(self, dt, force):
+    def leap_velocity(self, dt, acceleration):
         """
         First-order velocity update,
         v(t+dt) = v(t) + dt*F(t)/m
@@ -68,7 +74,7 @@ class Particle3D(object):
         :param force: force on particle as float
         """
 
-        self.velocity = self.velocity + dt*force/self.mass
+        self.velocity = self.velocity + dt*acceleration
 
     def leap_pos1st(self, dt):
         """
@@ -80,7 +86,7 @@ class Particle3D(object):
 
         self.position = self.position + dt*self.velocity
 
-    def leap_pos2nd(self, dt, force):
+    def leap_pos2nd(self, dt, acceleration):
         """
         Second-order position update,
         x(t+dt) = x(t) + dt*v(t) + 1/2*dt^2*F(t)
@@ -89,7 +95,7 @@ class Particle3D(object):
         :param force: current force as float
         """
 
-        self.position = self.position + dt*self.velocity + 0.5*dt**2*self.force/self.mass
+        self.position = self.position + dt*self.velocity + 0.5*dt**2*self.acceleration
 
     @staticmethod
     def extract_data(file_handle):
@@ -110,7 +116,6 @@ class Particle3D(object):
         velocity = np.array(args[4:7],float)
         mass = float(args[7])
         return Particle3D(label,position,velocity,mass)
-
 
     @staticmethod
     def Vector_Separation(p1, p2):
