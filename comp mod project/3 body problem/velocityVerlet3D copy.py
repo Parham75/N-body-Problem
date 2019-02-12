@@ -1,6 +1,6 @@
 from typing import Any
 
-2"""
+"""
 By : Mohammadreza Aboutalebi
 UUN : s1664598
 date : Nov 2018
@@ -56,8 +56,19 @@ def cm_velocity(p1,p2,p3):
     total_mass = p1.mass + p2.mass + p3.mass
 
     return cm_momentum / total_mass
+'''
+def Vector_Separation(p1, p2):
+        """
+        A static method to :
+        Return the vector separatin directed getiing p1 and p2
 
+        :param p1: pi particle postion as numpy array
+        :param p2: p2 particle position as numpy array
+        :return: Vector Separation
+        """
+    return p1.position - p2.position
 
+'''    
 '''
 def make_pyplot(x, y, label_y):
     """
@@ -92,10 +103,7 @@ def main(argv1, argv2, argv3):
     # Open input and output file
     outfile = open(outfile_name, "w")
 
-    with open(param_info, "r") as ins:
-    	sim_param = []
-    for line in ins:
-        sim_param.append(line)
+    sim_param = open(param_info, "r").readlines()
 
     input_file = open(input_file_name, "r")
 
@@ -106,28 +114,34 @@ def main(argv1, argv2, argv3):
 
     # Set up two particles initial conditions and energy from input_file:
 
-    p1 = Particle3D.extract_data(input_file)
-    p2 = Particle3D.extract_data(input_file)
-    p3 = Particle3D.extract_data(input_file)
+    Plist = Particle3D.extract_data(input_file)
+    #p2 = Particle3D.extract_data(input_file)
+    #p3 = Particle3D.extract_data(input_file)
+    counter = 0
+    outfile.write(counter)
+    for p in Plist:
+    	outfile.write(str(p)+"\n")
+	counter+=1
+    
+    print(pos_list)
 
-    outfile.write("{0:f} {1:f} {2:12f}\n".format(time,pos_list))
-
+    
     # Get initial force
-    acceleration_1 = (force_dw(p1, p2) + force_dw(p1, p3))/mass(p1)
-    acceleration_2 = (force_dw(p2, p3) + force_dw(p2, p1))/mass(p2)
-    acceleration_3 = (force_dw(p3, p1) + force_dw(p3, p2))/mass(p3)
+    acceleration_1 = (force_dw(p1, p2) + force_dw(p1, p3))/mass(Plist[0])
+    acceleration_2 = (force_dw(p2, p3) + force_dw(p2, p1))/mass(Plist[1])
+    acceleration_3 = (force_dw(p3, p1) + force_dw(p3, p2))/mass(Plist[2])
 
     # Initialise data lists for plotting later
     time_list = [time]
-    pos_list = [p1.position, p2.position, p3.position]
+    #pos_list = [p1.position, p2.position, p3.position]
 
     # Start the time integration loop
 
     for i in range(numstep):
         # Update particle position
-        p1.position = p1.leap_pos2nd(dt, acceleration_1)
-        p2.position = p2.leap_pos2nd(dt, acceleration_2)
-        p3.position = p3.leap_pos2nd(dt, acceleration_3)
+        Plist[0].position = p1.leap_pos2nd(dt, acceleration_1)
+        Plist[1].position = p2.leap_pos2nd(dt, acceleration_2)
+        Plist[2].position = p3.leap_pos2nd(dt, acceleration_3)
 
         # Update force
         acceleration_new_1 = (force_dw(p1, p2) + force_dw(p1, p3))/mass(p1)
@@ -175,4 +189,5 @@ def main(argv1, argv2, argv3):
 
 # Execute main method:
 if __name__ == "__main__":
+
     main(sys.argv[1],sys.argv[2],sys.argv[3])
