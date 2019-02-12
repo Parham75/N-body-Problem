@@ -1,3 +1,5 @@
+from typing import Any
+
 2"""
 By : Mohammadreza Aboutalebi
 UUN : s1664598
@@ -45,10 +47,20 @@ def force_dw(particle1, particle2):
     force = ((1.48818E-34)*m1m2)/r**3
     return force*vector_R
 
+def cm_velocity(p1,p2,p3):
+
+    cm_momentum = 0
+    total_mass = 0
+
+    cm_momentum = p1.velocity*p1.mass + p2.velocity*p2.mass + p3.velocity*p3.mass
+    total_mass = p1.mass + p2.mass + p3.mass
+
+    return cm_momentum / total_mass
+
 
 '''
 def make_pyplot(x, y, label_y):
-    ""
+    """
     Method to make plots of two lists of numbers
     where the first is the time.
 
@@ -124,9 +136,9 @@ def main(argv1, argv2, argv3):
 
         # Update particle velocity by averaging
         # current and new forces
-        p1.leap_velocity(dt, 0.5*(acceleration_1+acceleration_new_1))
-        p2.leap_velocity(dt, 0.5*(acceleration_2+acceleration_new_2))
-        p3.leap_velocity(dt, 0.5*(acceleration_3+acceleration_new_3))
+        p1.leap_velocity(dt, 0.5*(acceleration_1+acceleration_new_1)) - p1.cm_velocity
+        p2.leap_velocity(dt, 0.5*(acceleration_2+acceleration_new_2)) - p2.cm_velocity
+        p3.leap_velocity(dt, 0.5*(acceleration_3+acceleration_new_3)) - p3.cm_velocity
 
         # Re-define force value
         acceleration_1 = acceleration_new_1
@@ -136,7 +148,7 @@ def main(argv1, argv2, argv3):
 
         # Increase time
         time = time + dt
-
+        
 
         # Append information to data lists
         time_list.append(time)
@@ -146,7 +158,7 @@ def main(argv1, argv2, argv3):
         outfile.write("{0:f} {1:f} {2:12f}\n".format(time,pos_list))
 
     # Post-simulation:
-
+    
     # Close all files
     outfile.close()
     input_file.close()
