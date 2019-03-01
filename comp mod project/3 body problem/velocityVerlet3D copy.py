@@ -40,12 +40,13 @@ def force_dw(particle1, particle2):
     :param alpha: parameter alpha from potential
     :return: force acting on particle as a Numpy array
     """
-
-    vector_R = Particle3D.Vector_Separation(particle1,particle2)
+    force_dw = []
+    while i, j <= len(Plist) and i != j:
+    vector_R = Particle3D.Vector_Separation(Plist[i],Plist[j])
     R = np.linalg.norm(vector_R)
-    m1m2 = Particle3D.mass(particle1)*Particle3D.mass(particle1)
-    force = ((1.48818E-34)*m1m2)/r**3
-    return force*vector_R
+    m1m2 = Particle3D.mass(Plist[i])*Particle3D.mass(Plist[j])
+    force_dw[i] = sum((((1.48818E-34)*m1m2)/R**3)*vector_R)
+    return force_dw
 
 def cm_velocity(p1,p2,p3):
 
@@ -118,6 +119,7 @@ def main(argv1, argv2, argv3):
     #p2 = Particle3D.extract_data(input_file)
     #p3 = Particle3D.extract_data(input_file)
     counter = 0
+    outfile.write("3")
     outfile.write(counter)
     for p in Plist:
     	outfile.write(str(p)+"\n")
@@ -125,12 +127,17 @@ def main(argv1, argv2, argv3):
     
     print(pos_list)
 
-    
-    # Get initial force
-    acceleration_1 = (force_dw(p1, p2) + force_dw(p1, p3))/mass(Plist[0])
-    acceleration_2 = (force_dw(p2, p3) + force_dw(p2, p1))/mass(Plist[1])
-    acceleration_3 = (force_dw(p3, p1) + force_dw(p3, p2))/mass(Plist[2])
+    acceleration = []
 
+    while i, j <= len(Plist) and i != j:
+        acceleration[i] = force_dw[i]/mass(Plist[i])
+
+    '''
+    # Get initial force
+    acceleration_1 = (force_dw(Plist[0], Plist[1]) + force_dw(p1, p3))/mass(Plist[0])
+    acceleration_2 = (force_dw(Plist[1], Plist[2]) + force_dw(p2, p1))/mass(Plist[1])
+    acceleration_3 = (force_dw(Plist[2], Plist[0]) + force_dw(p3, p2))/mass(Plist[2])
+    '''
     # Initialise data lists for plotting later
     time_list = [time]
     #pos_list = [p1.position, p2.position, p3.position]
@@ -139,10 +146,13 @@ def main(argv1, argv2, argv3):
 
     for i in range(numstep):
         # Update particle position
-        Plist[0].position = p1.leap_pos2nd(dt, acceleration_1)
-        Plist[1].position = p2.leap_pos2nd(dt, acceleration_2)
-        Plist[2].position = p3.leap_pos2nd(dt, acceleration_3)
-
+        for n in range(len(Plist)):
+            Plist[n].position = Plist[n].leap_pos2nd(dt, acceleration[n])
+        '''
+        Plist[0].position = Plist[0].leap_pos2nd(dt, acceleration_1)
+        Plist[1].position = Plist[1].leap_pos2nd(dt, acceleration_2)
+        Plist[2].position = Plist[2].leap_pos2nd(dt, acceleration_3)
+        '''
         # Update force
         acceleration_new_1 = (force_dw(p1, p2) + force_dw(p1, p3))/mass(p1)
         acceleration_new_2 = (force_dw(p2, p3) + force_dw(p2, p1))/mass(p2)
