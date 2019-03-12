@@ -273,7 +273,9 @@ def main(argv1, argv2, argv3):
     # Initialise data lists for plotting later
     time_list = [time]
     #pos_list = [p1.position, p2.position, p3.position]
+    pos_list_in = [o.position for o in Plist]
     pos_list = [o.position for o in Plist]
+
     #velocity_list = [o.velocity for o in Plist]
     #energy_list = [energy]
     #print(pos_list)
@@ -325,7 +327,7 @@ def main(argv1, argv2, argv3):
 
         # Append information to data lists
         time_list.append(time)
-        Plist.append(Plist[i])
+        pos_list.append([o.position for o in Plist])
 
         # write in the output file
     
