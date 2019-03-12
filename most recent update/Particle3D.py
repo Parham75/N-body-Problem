@@ -14,6 +14,7 @@
 '''
 import math
 import numpy as np
+import types
 
 class Particle3D(object):
     """
@@ -104,6 +105,8 @@ class Particle3D(object):
         """
 
         self.position = self.position + dt*self.velocity
+        #if  self.position is None:
+                #raise TypeError
 
     def leap_pos2nd(self, dt, acceleration):
         """
@@ -115,7 +118,10 @@ class Particle3D(object):
         """
         #acceleration = self.acceleration
 
+
         self.position = self.position + dt*self.velocity + 0.5*dt**2*acceleration
+        #if  self.position is None:
+                #raise TypeError
 
     @staticmethod
     def extract_data(in_file):
@@ -130,7 +136,7 @@ class Particle3D(object):
         """
         Plist = []
         line = in_file.readline()
-        print(line, "halim")
+        #print(line, "halim")
         #for line in range(len(line))
         while line:
             #print(line)
@@ -145,16 +151,25 @@ class Particle3D(object):
             #y_vel = float(args[5])
             #z_vel = float(args[6])
             mass = float(args[7])
+            if  len(line)==0:
+                break
             #print(args, label, position, velocity, mass)
-            Plist.append(Particle3D(label,position,velocity,mass))
+            particle = Particle3D(label,position,velocity,mass)
+            if  particle.position is None:
+                continue
+            Plist.append(particle)
             #Plist.append(Particle3D(label, x_pos, y_pos, z_pos, x_vel, y_vel, z_vel, mass))
             line = in_file.readline()
 
-            print(Plist, "holo") 
+            #if 'str' in line:
+            #if  len(line)==0:
+                #break
+
+            #print(line, "holo") 
         #print(np.vstack([o.position for o in Plist]), "holo")   
         return Plist
 
-    @staticmethod
+    #@staticmethod
     def Vector_Separation(p1, p2):
         """
         A static method to : when i change line 111 from self. acceleration to acceleration this deoes not work anymore
@@ -173,7 +188,26 @@ class Particle3D(object):
 
             return 0
         """
+        #vec_sep = np.zeros(3)
+        #if p1.position is not None and p2.position is not None:
 
+            #vec_sep = p1.position - p2.position
+        #vec_sep = np.zeros(3)
+        #while p1.position is not None:
+
+            #vec_sep = p1.position - p2.position
+        #if isinstance(p1.position - p2.position,):
+        #vec_sep = (p1.position - p2.position if p1.position is not None)
+
+        #for x in vec_sep:
+            #return x
+
+        #if any(p1.position) is not None:
+            #return p1.position - p2.position
+        #print(type(p1.position))
+
+        #print(p1.position, "havij")
         return p1.position - p2.position
+        #return vec_sep
 
 
