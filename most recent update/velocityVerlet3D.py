@@ -65,7 +65,7 @@ def force_dw(Plist):
             #m1m2 = Plist[pi].mass*Plist[pj].mass
             #if pi != pj:
             if R != 0:
-                force_dw[i, j, :] = (((1.48818E-34)*m1m2)/R**3)*vector_R
+                force_dw[i, j, :] = (((-1.48818E-34)*m1m2)/R**3)*vector_R
 
             else:
                 force_dw[i, j, :] = np.zeros(3)
@@ -127,6 +127,8 @@ def kinetic_energy_dw(Plist):
 
 
     return kinetic_energy
+
+
 '''
 def cm_velocity(Plist):
 
@@ -164,11 +166,7 @@ def make_pyplot(x, y, label_y):
     pyplot.plot(x, y)
     pyplot.show()
 '''
-#def period(pos_list_each):
-
-
-
-
+#def period(pos_list_each, T):
 
 
 
@@ -184,10 +182,21 @@ def apsides(pos_list_each):
 
     return numpy.mean(pos_list_each, axis=0)
 
-def pos_list_each(pos_list):
+def pos_list_each(Plist, pos_list, label):
 
 
-    pos_list_1 = np.array(pos_list)
+    no_parts = len(Plist)
+
+    for n in range(no_parts):
+
+        if Plist[n].label == label:
+
+            return n
+
+    pos_list_n = np.array(pos_list[n::no_parts])
+
+
+    return pos_list_n
 
 
 
@@ -268,10 +277,18 @@ def main(argv1, argv2, argv3):
             outfile.write(str(p)+"\n")
         #counter+=1
     '''
+    
+    #print([o.velocity for o in Plist], "before")
+    #print(Particle3D.cm_velocity(Plist), "CM")
+    for i in range(no_parts):
 
+        Plist[i].velocity = Plist[i].velocity - Particle3D.cm_velocity(Plist)
+
+    #print([o.velocity for o in Plist], "after")
+    
     for i in range(0):
 
-        outfile.write("3\n")
+        outfile.write("10\n")
         outfile.write("point = %d\r\n" % (i+1))
         for p in Plist:
 
@@ -284,6 +301,7 @@ def main(argv1, argv2, argv3):
         acceleration[i] = force_dw[i]/mass(Plist[i])
     '''
     force_in = force_dw(Plist)
+    #print(force_in, "before")
     acceleration_in = acceleration(Plist, force_in)
     # Initialise data lists for plotting later
     time_list = [time]
@@ -300,10 +318,11 @@ def main(argv1, argv2, argv3):
         for n in range(no_parts):
 
 
-            Plist[n].leap_pos2nd(dt, acceleration_in[n,0], Particle3D.cm_velocity(Plist))
+            Plist[n].leap_pos2nd(dt, acceleration_in[n,0])
 
     # Update force
         force_new = force_dw(Plist)
+        #print(force_new)
         acceleration_new = acceleration(Plist, force_new)
 
         for n in range(no_parts):
@@ -311,7 +330,7 @@ def main(argv1, argv2, argv3):
 
             # Update particle velocity by averaging acceleration
             # current and new forces
-            Plist[n].leap_velocity(dt, 0.5*(acceleration_in[n,0]+acceleration_new[n,0]), Particle3D.cm_velocity(Plist))
+            Plist[n].leap_velocity(dt, 0.5*(acceleration_in[n,0]+acceleration_new[n,0]))
             #Plist[n].velocity = Plist[n].velocity + dt*(0.5*(acceleration[n,0]+acceleration_new[n,0]) - cm_velocities
 
         #for n in range(no_parts):
@@ -324,7 +343,7 @@ def main(argv1, argv2, argv3):
 
             #Plist[n].velocity = Plist[n].velocity - Particle3D.cm_velocity(Plist)
         # Re-define force value
-        Plist = Plist
+        #Plist = Plist
 
         acceleration_in = acceleration_new
 
@@ -341,7 +360,7 @@ def main(argv1, argv2, argv3):
 
         # write in the output file
     
-        outfile.write("3\n")
+        outfile.write("10\n")
         outfile.write("point = %d\r\n" % (i+1))
         for p in Plist:
             #print(str(p)

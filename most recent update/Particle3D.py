@@ -65,6 +65,9 @@ class Particle3D(object):
 
 
         return self.mass
+    def cm_correction(self, cm_velocity):
+
+        return  self.velocity - cm_velocity
 
     def kinetic_energy(self):
         """
@@ -76,7 +79,7 @@ class Particle3D(object):
 
     # Time integration methods
 
-    def leap_velocity(self, dt, acceleration, cm_vel):
+    def leap_velocity(self, dt, acceleration):
         """
         First-order velocity update,
         v(t+dt) = v(t) + dt*F(t)/m
@@ -86,7 +89,7 @@ class Particle3D(object):
         """
         #if type(self.velocity) != np.ndarray:
 
-        self.velocity = (self.velocity - cm_vel) + dt*acceleration
+        self.velocity = self.velocity + dt*acceleration
 
     def leap_pos1st(self, dt):
         """
@@ -100,7 +103,7 @@ class Particle3D(object):
         #if  self.position is None:
                 #raise TypeError
 
-    def leap_pos2nd(self, dt, acceleration, cm_vel):
+    def leap_pos2nd(self, dt, acceleration):
         """
         Second-order position update,
         x(t+dt) = x(t) + dt*v(t) + 1/2*dt^2*F(t)
@@ -111,7 +114,7 @@ class Particle3D(object):
         #acceleration = self.acceleration
 
 
-        self.position = self.position + dt*(self.velocity - cm_vel) + 0.5*dt**2*acceleration
+        self.position = self.position + dt*self.velocity + 0.5*dt**2*acceleration
         #if  self.position is None:
                 #raise TypeError
     @staticmethod
