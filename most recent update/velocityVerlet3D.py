@@ -62,6 +62,7 @@ def force_dw(Plist):
             #vector_R = pos_list[i] - pos_list[j]
             R = np.linalg.norm(vector_R)
             m1m2 = Particle3D.mass(pi)*Particle3D.mass(pj)
+            #m1m2 = Plist[pi].mass*Plist[pj].mass
             #if pi != pj:
             if R != 0:
                 force_dw[i, j, :] = (((1.48818E-34)*m1m2)/R**3)*vector_R
@@ -71,9 +72,65 @@ def force_dw(Plist):
 
     return force_dw
 
+def acceleration(Plist, force):
+
+    no_parts = len(Plist)
+    acceleration = np.zeros((no_parts, no_parts, 3))
+    for i in range(no_parts):
+
+        acceleration[i] = np.sum(force[i]/Plist[i].mass , axis=0)
+
+    return acceleration
+
+def pot_energy_dw(Plist):
+    """
+    Method to return potential energy of a particle in
+    a Morse potential which is given by:
+    V(r1,r2) = D_e * ((1-exp[-a*(R12 - re)])**2 - 1)
+
+    :param particle1: Particle3D instance
+    :param particle2: Particle3D instance
+    :param D_e: parameter D_e from potential
+    :param r_e: parameter r_e from potential
+    :param alpha: parameter alpha from potential
+    :return: potential energy of particle as float
+    """
+
+    no_parts = len(Plist)
+    #pos_list = [o.position for o in Plist]
+    pot_energy_dw = np.zeros((no_parts, no_parts))
+    
+    for i,pi in enumerate(Plist):
+        for j,pj in enumerate(Plist):
+            vector_R = Particle3D.Vector_Separation(pi, pj)
+            #vector_R = pos_list[i] - pos_list[j]
+            R = np.linalg.norm(vector_R)
+            m1m2 = Particle3D.mass(pi)*Particle3D.mass(pj)
+            #m1m2 = Plist[pi].mass*Plist[pj].mass
+            #if pi != pj:
+            if R != 0:
+                pot_energy_dw[i, j] = ((-(1.48818E-34)*m1m2)/R)
+
+            else:
+                pot_energy_dw[i, j] = np.zeros(0)
+
+    return pot_energy_dw
+
+def kinetic_energy_dw(Plist):
+
+
+    no_parts = len(Plist)
+    kinetic_energy = np.zeros(no_parts)
+    for i in range(no_parts):
+
+        kinetic_energy[i] = Particle3D.kinetic_energy(i)
+
+
+    return kinetic_energy
+'''
 def cm_velocity(Plist):
 
-    '''
+
     no_parts = len(Plist)
     cm_velocity = np.zeros((no_parts, no_parts, 3))
     for i in range(len(Plist)):
@@ -88,36 +145,8 @@ def cm_velocity(Plist):
             cm_velocity[j] -= (v1 * m1 + v2 * m2) / (m1 + m2)
 
             maybe writing this in particle3D
-    '''
-
-
-    no_parts = len(Plist)
-    cm_velocity = np.zeros(3)
-    mass_list = [a.mass for a in Plist]
-    velocity_list = [b.velocity for b in Plist]
-    momentum = np.zeros((no_parts, 3))
-    for i in range(no_parts):
-
-        momentum[i] = velocity_list[i]*mass_list[i]
-
-    cm_velocity = np.sum(momentum, axis=0)/np.sum(mass_list)
-    velocity_list[:] = [x - cm_velocity for x in velocity_list]
-
-    return velocity_list
- 
 '''
-def Vector_Separation(p1, p2):
-        """
-        A static method to :
-        Return the vector separatin directed getiing p1 and p2
-
-        :param p1: pi particle postion as numpy array
-        :param p2: p2 particle position as numpy array
-        :return: Vector Separation
-        """
-    return p1.position - p2.position
-
-'''    
+  
 '''
 def make_pyplot(x, y, label_y):
     """
@@ -135,28 +164,39 @@ def make_pyplot(x, y, label_y):
     pyplot.plot(x, y)
     pyplot.show()
 '''
-'''
-def pot_energy_dw(particle1, particle2, D_e, r_e, alpha):
-    """
-    Method to return potential energy of a particle in
-    a Morse potential which is given by:
-    V(r1,r2) = D_e * ((1-exp[-a*(R12 - re)])**2 - 1)
-
-    :param particle1: Particle3D instance
-    :param particle2: Particle3D instance
-    :param D_e: parameter D_e from potential
-    :param r_e: parameter r_e from potential
-    :param alpha: parameter alpha from potential
-    :return: potential energy of particle as float
-    """
-
-    vec_R12 = Particle3D.relative_sep(particle1,particle2)
-    R12 = np.linalg.norm(vec_R12)
-    potential = D_e * ((1-np.exp(-alpha*(R12 - r_e)))**2 - 1)
-    return potential
+#def period(pos_list_each):
 
 
-def total_energy(particle1, particle2, D_e, r_e, alpha):
+
+
+
+
+
+
+
+
+
+
+
+def apsides(pos_list_each):
+
+
+
+    return numpy.mean(pos_list_each, axis=0)
+
+def pos_list_each(pos_list):
+
+
+    pos_list_1 = np.array(pos_list)
+
+
+
+
+
+
+
+
+def total_energy(pot, kinetic):
     """
     Method to return the total energy of the molecule
     (i.e. two particles) made up by their kinetic energies
@@ -169,9 +209,15 @@ def total_energy(particle1, particle2, D_e, r_e, alpha):
     :param alpha: parameter alpha from potential
     :return: total energy of molecule as a float
     """
+    no_parts = len(kinetic)
+    pot_each = np.zeros(no_parts)
+    for i in range(no_parts):
 
-    return particle1.kinetic_energy() + particle2.kinetic_energy() + pot_energy_dw(particle1, particle2, D_e, r_e, alpha)
-'''
+        pot_each[i] = np.sum(pot[i])
+
+
+    return np.sum(pot_each + kinetic)
+
 # Begin main code
 def main(argv1, argv2, argv3):
 
@@ -190,7 +236,7 @@ def main(argv1, argv2, argv3):
 
     sim_param = open(param_info, "r").readlines()
 
-    in_file = open(input_file_name, "r") 
+    in_file = open(input_file_name, "r")
     #with open(input_file_name, "r") as in_file:
     #    Plist = Particle3D.extract_data(in_file)
     #    print(args)
@@ -203,13 +249,14 @@ def main(argv1, argv2, argv3):
     # Set up two particles initial conditions and energy from input_file:
 
     Plist = Particle3D.extract_data(in_file)
+
     no_parts = len(Plist)
-    #energy = total_energy(p1,p2,D_e,r_e,alpha)
 
+    '''
+    for i in range(no_parts):
 
-    #print(Plist)
-    #p2 = Particle3D.extract_data(input_file)
-    #p3 = Particle3D.extract_data(input_file)
+        Plist[i].velocity = Plist[i].velocity - Particle3D.cm_velocity(Plist)
+    '''
     '''
     for i in range(numstep):
     
@@ -222,58 +269,25 @@ def main(argv1, argv2, argv3):
         #counter+=1
     '''
 
-    #print(type(Plist[1].velocity))
-    #print(type(velocity_list[1]))
-    #total_mass = [o.mass for o in Plist]
-    #print (total_mass)
-    #pos_list = numpy.concatenate([o.position for o in Plist], axis=0 )
-    #print([o.velocity for o in Plist])
+    for i in range(0):
 
-    #cm_velocities = cm_velocity(Plist)
-    #print(cm_velocities)
-    #print(force_dw(Plist)[2])
-    velocity_list = cm_velocity(Plist)
-    #print(velocity_list)
+        outfile.write("3\n")
+        outfile.write("point = %d\r\n" % (i+1))
+        for p in Plist:
 
-    acceleration = np.zeros((no_parts, no_parts, 3))
-    acceleration_new = np.zeros((no_parts, no_parts, 3))
+            if str(p) is not None:
+
+                outfile.write(str(p)+"\n")
     
-    for i in range(no_parts):
-        acceleration[i] = np.sum(force_dw(Plist)[i]/Plist[i].mass , axis=0)
-    '''
-    for i in range(no_parts):
-        acceleration[i] = np.delete(acceleration[i,0], (0), axis=0)
-    '''
-    #acceleration = np.zeros((len(Plist), 3))
-    """force_dw(Plist)
-    for i in range(len(Plist)):
-        for j in range(i + 1, len(Plist)):
-            acceleration[i] += force_dw[i]/Plist[i].mass
-            acceleration[j] -= force_dw[j]/Plist[j].mass
-    print(acceleration)
-    """
-    #print(cm_velocity(Plist))
-    #print(np.sum(force_dw(Plist) , axis=0))
-    #print(force_dw(Plist))
-    #print(np.delete(acceleration[0], (), axis=0)[0])
-    '''
-    for i in range(no_parts):
-        acceleration_tot[i] = np.sum(acceleration[i],axis=0)
-    '''
     '''
     while i, j <= len(Plist) and i != j:
         acceleration[i] = force_dw[i]/mass(Plist[i])
     '''
-    '''
-    # Get initial force
-    acceleration_1 = (force_dw(Plist[0], Plist[1]) + force_dw(p1, p3))/mass(Plist[0])
-    acceleration_2 = (force_dw(Plist[1], Plist[2]) + force_dw(p2, p1))/mass(Plist[1])
-    acceleration_3 = (force_dw(Plist[2], Plist[0]) + force_dw(p3, p2))/mass(Plist[2])
-    '''
+    force_in = force_dw(Plist)
+    acceleration_in = acceleration(Plist, force_in)
     # Initialise data lists for plotting later
     time_list = [time]
     #pos_list = [p1.position, p2.position, p3.position]
-    pos_list_in = [o.position for o in Plist]
     pos_list = [o.position for o in Plist]
 
     #velocity_list = [o.velocity for o in Plist]
@@ -281,34 +295,26 @@ def main(argv1, argv2, argv3):
     #print(pos_list)
     # Start the time integration loop
 
-    #acceleration_new = np.zeros((no_parts, no_parts, 3))
-    #acceleration = acceleration_new
-
     for i in range(numstep):
         # Update particle position
         for n in range(no_parts):
-            #Plist[n].position = Plist[n].leap_pos2nd(dt, acceleration[n])
-            Plist[n].leap_pos2nd(dt, acceleration[n,0])
-            #Plist[n].position = Plist[n].position + dt*(Plist[n].velocity - cm_velocities) + 0.5*dt**2*acceleration[n,0]
 
-         #Plist[0].position = Plist[0].leap_pos2nd(dt, acceleration_1)
-         #Plist[1].position = Plist[1].leap_pos2nd(dt, acceleration_2)
-         #Plist[2].position = Plist[2].leap_pos2nd(dt, acceleration_3)
 
-         #I think we need to consider substracting cente of mass velocity here too! (perhaps in Particle3D)
-        
-         # Update force
+            Plist[n].leap_pos2nd(dt, acceleration_in[n,0], Particle3D.cm_velocity(Plist))
 
-        forces = force_dw(Plist)
+    # Update force
+        force_new = force_dw(Plist)
+        acceleration_new = acceleration(Plist, force_new)
 
         for n in range(no_parts):
 
-            acceleration_new[n] = np.sum(forces[n]/Plist[n].mass , axis=0)
 
-            # Update particle velocity by averaging
+            # Update particle velocity by averaging acceleration
             # current and new forces
-            Plist[n].leap_velocity(dt, 0.5*(acceleration[n,0]+acceleration_new[n,0]))
+            Plist[n].leap_velocity(dt, 0.5*(acceleration_in[n,0]+acceleration_new[n,0]), Particle3D.cm_velocity(Plist))
             #Plist[n].velocity = Plist[n].velocity + dt*(0.5*(acceleration[n,0]+acceleration_new[n,0]) - cm_velocities
+
+        #for n in range(no_parts):
 
 
         
@@ -316,34 +322,37 @@ def main(argv1, argv2, argv3):
         #Plist.append(Plist[i])
 
 
+            #Plist[n].velocity = Plist[n].velocity - Particle3D.cm_velocity(Plist)
         # Re-define force value
-        acceleration = acceleration_new
+        Plist = Plist
 
-
+        acceleration_in = acceleration_new
 
         # Increase time
         time = time + dt
         
 
         # Append information to data lists
+
         time_list.append(time)
         pos_list.append([o.position for o in Plist])
+
+        #print(pos_list)
 
         # write in the output file
     
         outfile.write("3\n")
         outfile.write("point = %d\r\n" % (i+1))
         for p in Plist:
-            if str(p) is not None:
             #print(str(p)
-                outfile.write(str(p)+"\n")
+            outfile.write(str(p)+"\n")
      
     # Post-simulation:
     
     # Close all files
-    outfile.close()
-    in_file.close()
-    sim_param.close()
+    #outfile.close()
+    #in_file.close()
+    #sim_param.close()
 
     
 

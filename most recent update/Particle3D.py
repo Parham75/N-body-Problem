@@ -44,8 +44,6 @@ class Particle3D(object):
         """
 
         self.label = label
-        #self.position = np.array([x_pos, y_pos, z_pos])
-        #self.velocity = np.array([x_vel, y_vel, z_vel])
         self.position = pos
         self.velocity = vel
         self.mass = mass
@@ -62,13 +60,7 @@ class Particle3D(object):
         """
 
         return self.label + " " + str(self.position[0]) + " " + str(self.position[1]) + " " + str(self.position[2])
-    '''
-    def position(self):
 
-
-        return self.position 
-    ''' 
-  
     def mass(self):
 
 
@@ -84,7 +76,7 @@ class Particle3D(object):
 
     # Time integration methods
 
-    def leap_velocity(self, dt, acceleration):
+    def leap_velocity(self, dt, acceleration, cm_vel):
         """
         First-order velocity update,
         v(t+dt) = v(t) + dt*F(t)/m
@@ -94,7 +86,7 @@ class Particle3D(object):
         """
         #if type(self.velocity) != np.ndarray:
 
-        self.velocity = self.velocity + dt*acceleration
+        self.velocity = (self.velocity - cm_vel) + dt*acceleration
 
     def leap_pos1st(self, dt):
         """
@@ -108,7 +100,7 @@ class Particle3D(object):
         #if  self.position is None:
                 #raise TypeError
 
-    def leap_pos2nd(self, dt, acceleration):
+    def leap_pos2nd(self, dt, acceleration, cm_vel):
         """
         Second-order position update,
         x(t+dt) = x(t) + dt*v(t) + 1/2*dt^2*F(t)
@@ -119,10 +111,29 @@ class Particle3D(object):
         #acceleration = self.acceleration
 
 
-        self.position = self.position + dt*self.velocity + 0.5*dt**2*acceleration
+        self.position = self.position + dt*(self.velocity - cm_vel) + 0.5*dt**2*acceleration
         #if  self.position is None:
                 #raise TypeError
+    @staticmethod
+    def cm_velocity(Plist):
 
+        no_parts = len(Plist)
+        cm_velocity = np.zeros(3)
+        mass_list = [a.mass for a in Plist]
+        velocity_list = [b.velocity for b in Plist]
+        momentum = np.zeros((no_parts, 3))
+        for i in range(no_parts):
+
+            momentum[i] = velocity_list[i]*mass_list[i]
+
+        cm_velocity = np.sum(momentum, axis=0)/np.sum(mass_list)
+    #velocity_list[:] = [x - cm_velocity for x in velocity_list]
+    #for n in range(no_parts):
+
+        #Plist[n].velocity = velocity_list[n]
+        return cm_velocity
+
+    
     @staticmethod
     def extract_data(in_file):
         """
@@ -144,12 +155,7 @@ class Particle3D(object):
             label = str(args[0])
             position = np.array(args[1:4],float)
             velocity = np.array(args[4:7],float)
-            #x_pos = float(args[1])
-            #y_pos = float(args[2])
-            #z_pos = float(args[3])
-            #x_vel = float(args[4])
-            #y_vel = float(args[5])
-            #z_vel = float(args[6])
+
             mass = float(args[7])
             if  len(line)==0:
                 break
@@ -169,7 +175,7 @@ class Particle3D(object):
         #print(np.vstack([o.position for o in Plist]), "holo")   
         return Plist
 
-    #@staticmethod
+    @staticmethod
     def Vector_Separation(p1, p2):
         """
         A static method to : when i change line 111 from self. acceleration to acceleration this deoes not work anymore
@@ -209,5 +215,3 @@ class Particle3D(object):
         #print(p1.position, "havij")
         return p1.position - p2.position
         #return vec_sep
-
-
