@@ -171,13 +171,18 @@ def period(pos_list_each, time_list):
 
 
     r = np.zeros(len(pos_list_each))
-    min_r_index = np.argmin(r)
+    min_r = r[np.argmin(r)]
     max_r = r[np.argmax(r)]
+    min_r_index = np.argmin(r)
 
     for i in range(len(pos_list_each)):
 
         
         r[i] = np.linalg.norm(pos_list_each[i])
+    
+    for i,pi in enumerate(r):
+
+        if i 
 
 
     #print(r[min_r_index])
@@ -461,7 +466,7 @@ def main(argv1, argv2, argv3):
         print("apoapsis_moon:" ,apoapsis_mooon, "preapsis_moon:",preapsis_mooon, "apsis_moon:",apsis_moon, "period_moon:", period_mooon)
 
 
-    elif str(Planet) != "Moon":
+    elif str(Planet) != "Moon" and str(Planet) != "Sun" :
         pos_list_Planet = pos_list_each(Plist, pos_list, str(Planet))
         apoapsis_Planet = apoapsis(pos_list_Planet)
         preapsis_Planet = preapsis(pos_list_Planet)
