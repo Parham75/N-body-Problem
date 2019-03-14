@@ -1,20 +1,20 @@
 from typing import Any
 
 """
-By : Mohammadreza Aboutalebi
-UUN : s1664598
-date : Nov 2018
+By : Mohammadreza Aboutalebi and Austin Morris
+UUN : s1664598 and s1728541
+date : March 2019
 
-CMod Ex3: velocity Verlet time integration of
-a molecule moving in a Morse potential.
+Astronomical N-body Simulation: velocity Verlet time integration of
+objects moving in a Gravitational potential.
 
-Produces plots of the position of the particle
-and its energy, both as function of time. Also
-saves both to file.
+Correct for initial centre-of-mass motion,
+Simulate the evolution of the system using the velocity Verlet time integration algorithm,
+Write a trajectory file for the simulation that can be visualised using VMD.
 
-potential D_e * ((1-exp[-a*(R - re)])**2 - 1)
-force -2aD_e(1-exp[-a*(R - re)])exp[-a*(R - re)]vecector_R/R
-D_e and a are parameters defined in the main() method
+potential -(G*m1m2)/R)
+force -(G*m1m2)/R**3)*vector_R
+R and and vector_R are parameters defined in the force_dw() method
 and passed to the functions that
 calculate force and potential energy.
 
@@ -29,12 +29,11 @@ from Particle3D import Particle3D
 
 def exract_parameters(file_parameters):
     """
-    Method to get the parameteres from a the opened file on the molecule O2 or N2
-    first line contains parameters for O2 and second line for N2
+    Method to get the parameteres from the opened file on the astronomical bodies
     
     :param file_parameters: should be already open in main that contains the parameters
-    :param molecule: String of the label of the Particle3D.
-    :return: The three values D_e, r_e and alpha on O2 or N2 (they are different)
+    :param planet/moon/comet: String of the label of the Particle3D.
+    :return: The three values dt, number of steps, and total time
     """
     line = file_parameters.readlines()
 
@@ -42,16 +41,16 @@ def exract_parameters(file_parameters):
 
 def force_dw(Plist):
     """
-    Method to return the force on a particle in a Morse
-    potential given by: -2aD_e(1-exp[-a*(R - r_e)])exp[-a*(R - re)]vector_R/R
-    where R is separation between two atoms and vector_R is a vector from p1 to p2
+    Method to return the force on a particle in a Gravitational
+    potential given by: -(G*m1m2)/R**3)*vector_R
+    where R is separation between two bodies and vector_R is a vector from pi to pj
 
-    :param particle1: Particle3D instance
-    :param particle2: Particle3D instance
-    :param D_e: parameter D_e from potential
-    :param r_e: parameter r_e from potential
-    :param alpha: parameter alpha from potential
-    :return: force acting on particle as a Numpy array
+    :param particlei: Particle3D instance
+    :param particlej: Particle3D instance
+    :param G: constant parameter
+    :param vector_R: parameter vector_R from potential
+    :param R: parameter R from potential
+    :return: force acting on body as a Numpy array
     """
     no_parts = len(Plist)
     #pos_list = [o.position for o in Plist]
@@ -67,6 +66,7 @@ def force_dw(Plist):
             #if pi != pj:
             if R != 0:
                 force_dw[i, j, :] = (((-1.48818E-34)*m1m2)/R**3)*vector_R
+                #G is defined as the Gravitational constant and = -1.48818E-34 au^3/day^2/kg
 
             else:
                 force_dw[i, j, :] = np.zeros(3)
@@ -85,16 +85,16 @@ def acceleration(Plist, force):
 
 def pot_energy_dw(Plist):
     """
-    Method to return potential energy of a particle in
-    a Morse potential which is given by:
-    V(r1,r2) = D_e * ((1-exp[-a*(R12 - re)])**2 - 1)
+    Method to return potential energy of a body in
+    a Gravitational potential which is given by:
+    -(G*m1m2)/R)
 
-    :param particle1: Particle3D instance
-    :param particle2: Particle3D instance
-    :param D_e: parameter D_e from potential
-    :param r_e: parameter r_e from potential
-    :param alpha: parameter alpha from potential
-    :return: potential energy of particle as float
+    :param particlei: Particle3D instance
+    :param particlej: Particle3D instance
+    :param G: constant parameter
+    :param vector_R: parameter vector_R from potential
+    :param R: parameter R from potential
+    :return: potential energy of body as float
     """
 
     no_parts = len(Plist)
@@ -130,43 +130,7 @@ def kinetic_energy_dw(Plist):
     return kinetic_energy
 
 
-'''
-def cm_velocity(Plist):
 
-
-    no_parts = len(Plist)
-    cm_velocity = np.zeros((no_parts, no_parts, 3))
-    for i in range(len(Plist)):
-        for j in range(i+1, len(Plist)):
-
-            v1 = Particle3D.velocity(Plist[i])
-            v2 = Particle3D.velcoity(Plist[j])
-            m1 = Particle3D.mass(Plist[i])
-            m2 = Particle3D.mass(Plist[j])
-
-            cm_velocity[i] += (v1*m1 + v2*m2)/(m1 + m2)
-            cm_velocity[j] -= (v1 * m1 + v2 * m2) / (m1 + m2)
-
-            maybe writing this in particle3D
-'''
-  
-'''
-def make_pyplot(x, y, label_y):
-    """
-    Method to make plots of two lists of numbers
-    where the first is the time.
-
-    :param x: x values of the plot
-    :param y: y values of the plot
-    :param label_y: label of the axis y
-    """
-
-    pyplot.title('velocityVerlet: '+ label_y+' against time')
-    pyplot.xlabel('time')
-    pyplot.ylabel(label_y)
-    pyplot.plot(x, y)
-    pyplot.show()
-'''
 def period(pos_array_in, pos_list_each, time_list):
 
     cosinee = np.zeros(len(pos_list_each))
@@ -216,16 +180,15 @@ def pos_list_each(Plist, pos_list, label):
 
 def total_energy(pot, kinetic):
     """
-    Method to return the total energy of the molecule
-    (i.e. two particles) made up by their kinetic energies
-    plus the potential energy of the bond.
+    Method to return the total energy of a body
+    made up by its kinetic energy and potential energy.
 
-    :param particle1: Particle3D instance
-    :param particle2: Particle3D instance
-    :param D_e: parameter D_e from potential
-    :param r_e: parameter r_e from potential
-    :param alpha: parameter alpha from potential
-    :return: total energy of molecule as a float
+    :param particlei: Particle3D instance
+    :param particlej: Particle3D instance
+    :param G: constant parameter
+    :param vector_R: parameter vector_R from potential
+    :param R: parameter R from potential
+    :return: total energy of body as a float
     """
     no_parts = len(kinetic)
     pot_each = np.zeros(no_parts)

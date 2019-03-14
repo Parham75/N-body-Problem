@@ -1,17 +1,15 @@
 """
- CMod Ex3: Particle3D, a class to describe 3D particles
- By : Mohammadreza Aboutalebi
- UUN : s1664598
- date : Nov 2018
+By : Mohammadreza Aboutalebi and Austin Morris
+UUN : s1664598 and s1728541
+date : March 2019
+
+Astronomical N-body Simulation: list of Particle3D objects to hold n-bodies.
+
+Read in an arbitrary number of particles and their initial positions and velocities from an input file, and
+Read simulation parameters from a second input file.
+
 """
 
-'''
-    with open(param_info, "r") as ins:
-        sim_param = []
-    print(type(ins))
-    for line in ins:
-        sim_param.append(line)
-'''
 import math
 import numpy as np
 import types
@@ -65,12 +63,7 @@ class Particle3D(object):
 
 
         return self.mass
-    '''
-    def cm_correction(self, cm_velocity):
 
-        return  self.velocity - cm_velocity
-
-    '''
 
     def kinetic_energy(self):
         """
@@ -187,19 +180,11 @@ class Particle3D(object):
         A static method to : when i change line 111 from self. acceleration to acceleration this deoes not work anymore
         Return the vector separatin directed getiing p1 and p2
 
-        :param p1: pi particle postion as numpy array
+        :param p1: p1 particle postion as numpy array
         :param p2: p2 particle position as numpy array
         :return: Vector Separation
         """
-        """
-        if type(p1.position) == np.ndarray:
 
-            return p1.position - p2.position
-
-        else:
-
-            return 0
-        """
         #vec_sep = np.zeros(3)
         #if p1.position is not None and p2.position is not None:
 
