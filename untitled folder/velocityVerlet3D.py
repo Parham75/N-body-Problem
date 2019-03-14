@@ -224,20 +224,7 @@ def period(pos_list_each, time_list):
 
 '''
 
-'''
 
-    for j in range(len(pos_list_each)):
-
-        cosinee[j] = (np.dot(pos_array_in[i],pos_list_each[j]))/(np.linalg.norm(pos_array_in[i])*np.linalg.norm(pos_list_each[j]))
-
-
-        for n in range(o.98, 1.0, 0.001):
-
-            periode = np.max(time_list[i] - time_list[j])
-
-    return periode
-
-'''
 def period_moon(pos_list_moon, pos_list_earth, time_list):
 
     r = np.zeros(len(pos_list_moon))
@@ -245,9 +232,9 @@ def period_moon(pos_list_moon, pos_list_earth, time_list):
     for i in range(len(pos_list_moon)):
 
         
-        r[i] = abs(np.linalg.norm(pos_list_moon[i]-pos_list_earth[i]))
+        r[i] = abs(np.linalg.norm(pos_list_earth[i]-pos_list_moon[i]))
 
-        
+
 
     return 2*abs(time_list[np.argmax(r)] - time_list[np.argmin(r)])
 
@@ -268,14 +255,14 @@ def apoapsis(pos_list_each):
 
 def apoapsis_moon(pos_list_moon, pos_list_earth):
 
-    apoapsis = np.zeros(len(pos_list_moon))
+    apoapsis_moon = np.zeros(len(pos_list_moon))
 
     for i in range(len(pos_list_moon)):
 
         
-        apoapsis[i] = abs(np.linalg.norm(pos_list_moon[i]-pos_list_earth[i]))
+        apoapsis_moon[i] = abs(np.linalg.norm(pos_list_moon[i]-pos_list_earth[i]))
 
-    return np.max(apoapsis)
+    return np.max(apoapsis_moon)
 
 
 def preapsis(pos_list_each):
@@ -291,14 +278,14 @@ def preapsis(pos_list_each):
 
 def preapsis_moon(pos_list_moon, pos_list_earth):
 
-    preapsis = np.zeros(len(pos_list_moon))
+    preapsis_moon = np.zeros(len(pos_list_moon))
 
     for i in range(len(pos_list_moon)):
 
         
-        preapsis[i] = abs(np.linalg.norm(pos_list_moon[i]-pos_list_earth[i]))
+        preapsis_moon[i] = abs(np.linalg.norm(pos_list_moon[i]-pos_list_earth[i]))
 
-    return np.min(preapsis)
+    return np.min(preapsis_moon)
 
 def apsis(apoapsis, preapsis):
 
@@ -349,17 +336,21 @@ def total_energy(pot, kinetic):
 def main(argv1, argv2, argv3):
 
     # Read name of output file from command line
-    if len(sys.argv)!=4:
+    if len(sys.argv)!=5:
         print("Wrong number of arguments.")
-        print("Usage: " + sys.argv[0] + "<Particle input>" + "<Param input>" + "<output file>")
+        print("Usage: " + sys.argv[0] + "<Particle input>" + "<Param input>" + "<output file>" + "<energy file>")
         quit()
     else:
+        energy_file = sys.argv[4]
         outfile_name = sys.argv[3]
         param_info = sys.argv[2]
         input_file_name = sys.argv[1]
 
+
     # Open input and output file
     outfile = open(outfile_name, "w")
+
+    energy_out = open(energy_file, "w")
 
     sim_param = open(param_info, "r")
 
@@ -447,7 +438,8 @@ def main(argv1, argv2, argv3):
         energy_list.append(energy_new)
 
         #write in the output file
-    
+
+        energy_out.write(str(np.sum(potential_new))+","+str(np.sum(kintic_new))+","+str(energy_new)+","+str(time)+"\n")
         outfile.write(str(no_parts)+"\n")
         outfile.write("point = %d\r\n" % (i+1))
         for p in Plist:
@@ -456,27 +448,29 @@ def main(argv1, argv2, argv3):
      
     # Post-simulation:
 
-    Planet = input("Please type the name of the Planet for period and orbit geometry e.g Earth:  ")
+    Planet = input("Please type the name of the Planet for period and orbit geometry: ")
 
-    if str(Planet) == str(Moon):
+    if str(Planet) == "Moon":
 
         pos_list_earth = pos_list_each(Plist, pos_list, str("Earth"))
-        pos_list_Moon = pos_list_each(Plist, pos_list, str(Planet))
-        apoapsis_moon = apoapsis_moon(pos_list_moon, pos_list_earth)
-        preapsis_moon = preapsis_moon(pos_list_moon, pos_list_earth)
-        apsis_moon = apsis(apoapsis_moon, preapsis_moon)
-        period_moon = period(pos_list_moon, pos_list_earth, time_list)
-        print("apoapsis_moon:" ,apoapsis_moon, "preapsis_moon:",preapsis_moon, "apsis_moon:",apsis_moon, "period_moon:", period_moon)
+        pos_list_moon = pos_list_each(Plist, pos_list, str(Planet))
+        apoapsis_mooon = apoapsis_moon(pos_list_moon, pos_list_earth)
+        preapsis_mooon = preapsis_moon(pos_list_moon, pos_list_earth)
+        apsis_moon = apsis(apoapsis_mooon, preapsis_mooon)
+        period_mooon = period_moon(pos_list_moon, pos_list_earth, time_list)
+        print("apoapsis_moon:" ,apoapsis_mooon, "preapsis_moon:",preapsis_mooon, "apsis_moon:",apsis_moon, "period_moon:", period_mooon)
 
-    else:
 
+    elif str(Planet) != "Moon":
         pos_list_Planet = pos_list_each(Plist, pos_list, str(Planet))
-        pos_list_Planet = pos_list_each(Plist, pos_list, str(Planet))
-        apoapsis_Planet = apoapsis_moon(pos_list_Planet)
-        preapsis_Planet = preapsis_moon(pos_list_Planet)
+        apoapsis_Planet = apoapsis(pos_list_Planet)
+        preapsis_Planet = preapsis(pos_list_Planet)
         apsis_Planet = apsis(apoapsis_Planet, preapsis_Planet)
         period_Planet = period(pos_list_Planet, time_list)
         print("apoapsis_Planet:" ,apoapsis_Planet, "preapsis_Planet:",preapsis_Planet, "apsis_Planet:",apsis_Planet, "period_Planet:", period_Planet)
+
+    else:
+        print("incorrect label!")
 
     # Close all files
     outfile.close()
