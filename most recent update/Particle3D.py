@@ -65,9 +65,12 @@ class Particle3D(object):
 
 
         return self.mass
+    '''
     def cm_correction(self, cm_velocity):
 
         return  self.velocity - cm_velocity
+
+    '''
 
     def kinetic_energy(self):
         """
@@ -207,14 +210,5 @@ class Particle3D(object):
             #vec_sep = p1.position - p2.position
         #if isinstance(p1.position - p2.position,):
         #vec_sep = (p1.position - p2.position if p1.position is not None)
-
-        #for x in vec_sep:
-            #return x
-
-        #if any(p1.position) is not None:
-            #return p1.position - p2.position
-        #print(type(p1.position))
-
-        #print(p1.position, "havij")
+        
         return p1.position - p2.position
-        #return vec_sep

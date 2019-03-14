@@ -27,6 +27,18 @@ import matplotlib.pyplot as pyplot
 from Particle3D import Particle3D
 
 
+def exract_parameters(file_parameters):
+    """
+    Method to get the parameteres from a the opened file on the molecule O2 or N2
+    first line contains parameters for O2 and second line for N2
+    
+    :param file_parameters: should be already open in main that contains the parameters
+    :param molecule: String of the label of the Particle3D.
+    :return: The three values D_e, r_e and alpha on O2 or N2 (they are different)
+    """
+    line = file_parameters.readlines()
+
+    return float(line[0]), int(line[1]), float(line[2])
 
 def force_dw(Plist):
     """
@@ -40,17 +52,6 @@ def force_dw(Plist):
     :param r_e: parameter r_e from potential
     :param alpha: parameter alpha from potential
     :return: force acting on particle as a Numpy array
-    """
-    """
-    force_dw = np.zeros((len(Plist),6))
-    for i in range (len(Plist)):
-        for j in range (i+1, len(Plist)):
-            vector_R = Particle3D.Vector_Separation(Plist[i],Plist[j])
-            R = np.linalg.norm(vector_R)
-            m1m2 = Particle3D.mass(Plist[i])*Particle3D.mass(Plist[j])
-            force_dw[i, :] += (((1.48818E-34)*m1m2)/R**3)*vector_R
-            force_dw[j, :] -= (((1.48818E-34)*m1m2)/R**3)*vector_R
-            #check signs above: +,- might be switched i.e. attraction vs. repellence
     """
     no_parts = len(Plist)
     #pos_list = [o.position for o in Plist]
@@ -112,7 +113,7 @@ def pot_energy_dw(Plist):
                 pot_energy_dw[i, j] = ((-(1.48818E-34)*m1m2)/R)
 
             else:
-                pot_energy_dw[i, j] = np.zeros(0)
+                pot_energy_dw[i, j] = 0
 
     return pot_energy_dw
 
@@ -123,7 +124,7 @@ def kinetic_energy_dw(Plist):
     kinetic_energy = np.zeros(no_parts)
     for i in range(no_parts):
 
-        kinetic_energy[i] = Particle3D.kinetic_energy(i)
+        kinetic_energy[i] = Particle3D.kinetic_energy(Plist[i])
 
 
     return kinetic_energy
@@ -166,21 +167,35 @@ def make_pyplot(x, y, label_y):
     pyplot.plot(x, y)
     pyplot.show()
 '''
-#def period(pos_list_each, T):
+def period(pos_array_in, pos_list_each, time_list):
+
+    cosinee = np.zeros(len(pos_list_each))
+    periode = np.zeros(len(time_list))
+    #print(pos_list_each)
+    for i in range(len(pos_array_in)):
+
+        if pos_array_in[i] == pos_list_each[1] :
+
+            return i
+    for j in range(o.98, 1.0, 0.001):
+
+        cosinee = (np.dot(pos_array_in[i],pos_list_each[j]))/(np.linalg.norm(pos_array_in[i])*np.linalg.norm(pos_list_each[j])
+
+
+        if np.all(cosinee) == 1 and i != j:
+
+            periode = np.max(time_list[i] - time_list[j])
+
+    return periode
 
 
 
 
+def apoapsis(pos_list_each):
 
 
 
-
-
-def apsides(pos_list_each):
-
-
-
-    return numpy.mean(pos_list_each, axis=0)
+    return numpy.max(pos_list_each, axis=0)
 
 def pos_list_each(Plist, pos_list, label):
 
@@ -191,19 +206,13 @@ def pos_list_each(Plist, pos_list, label):
 
         if Plist[n].label == label:
 
-            return n
+            #return n
 
-    pos_list_n = np.array(pos_list[n::no_parts])
-
+            pos_list_n = np.array(pos_list[n::no_parts])
+            break;
+            #print("pos_list_n", pos_list[n::no_parts], "\n\n\n")
 
     return pos_list_n
-
-
-
-
-
-
-
 
 def total_energy(pot, kinetic):
     """
@@ -243,7 +252,7 @@ def main(argv1, argv2, argv3):
     # Open input and output file
     outfile = open(outfile_name, "w")
 
-    sim_param = open(param_info, "r").readlines()
+    sim_param = open(param_info, "r")
 
     in_file = open(input_file_name, "r")
     #with open(input_file_name, "r") as in_file:
@@ -251,44 +260,29 @@ def main(argv1, argv2, argv3):
     #    print(args)
     # Set up simulation parameters
     #print(sim_param)
+    '''
     dt = float(sim_param[0])
     numstep = int(sim_param[1])
     time = float(sim_param[2])
-    
+    '''
+    dt, numstep, time = exract_parameters(sim_param)
     # Set up two particles initial conditions and energy from input_file:
-
     Plist = Particle3D.extract_data(in_file)
-
     no_parts = len(Plist)
+    force_in = force_dw(Plist)
+    pos_array_in  = np.array([o.position for o in Plist])
+    potential_in = pot_energy_dw(Plist)
+    kintic_in = kinetic_energy_dw(Plist)
+    energy_in = total_energy(potential_in, kintic_in)
+    acceleration_in = acceleration(Plist, force_in)
 
-    '''
     for i in range(no_parts):
 
         Plist[i].velocity = Plist[i].velocity - Particle3D.cm_velocity(Plist)
-    '''
-    '''
-    for i in range(numstep):
-    
-        #counter = 0
-        outfile.write("no_parts")
-        outfile.write("point = %d\r\n" % (i+1))
-        for p in Plist:
-            #outfile.write('%s,%8s,%8s,%8s\n' % (xpoints,ypoints,0))
-            outfile.write(str(p)+"\n")
-        #counter+=1
-    '''
-    
-    #print([o.velocity for o in Plist], "before")
-    #print(Particle3D.cm_velocity(Plist), "CM")
-    for i in range(no_parts):
-
-        Plist[i].velocity = Plist[i].velocity - Particle3D.cm_velocity(Plist)
-
-    #print([o.velocity for o in Plist], "after")
     
     for i in range(0):
 
-        outfile.write("10\n")
+        outfile.write(str(no_parts)+"\n")
         outfile.write("point = %d\r\n" % (i+1))
         for p in Plist:
 
@@ -296,21 +290,10 @@ def main(argv1, argv2, argv3):
 
                 outfile.write(str(p)+"\n")
     
-    '''
-    while i, j <= len(Plist) and i != j:
-        acceleration[i] = force_dw[i]/mass(Plist[i])
-    '''
-    force_in = force_dw(Plist)
-    #print(force_in, "before")
-    acceleration_in = acceleration(Plist, force_in)
     # Initialise data lists for plotting later
     time_list = [time]
-    #pos_list = [p1.position, p2.position, p3.position]
     pos_list = [o.position for o in Plist]
-
-    #velocity_list = [o.velocity for o in Plist]
-    #energy_list = [energy]
-    #print(pos_list)
+    energy_list = [energy_in]
     # Start the time integration loop
 
     for i in range(numstep):
@@ -331,17 +314,8 @@ def main(argv1, argv2, argv3):
             # Update particle velocity by averaging acceleration
             # current and new forces
             Plist[n].leap_velocity(dt, 0.5*(acceleration_in[n,0]+acceleration_new[n,0]))
-            #Plist[n].velocity = Plist[n].velocity + dt*(0.5*(acceleration[n,0]+acceleration_new[n,0]) - cm_velocities
-
-        #for n in range(no_parts):
 
 
-        
-        #pos_list.append(o.position for o in Plist)
-        #Plist.append(Plist[i])
-
-
-            #Plist[n].velocity = Plist[n].velocity - Particle3D.cm_velocity(Plist)
         # Re-define force value
         #Plist = Plist
 
@@ -349,29 +323,40 @@ def main(argv1, argv2, argv3):
 
         # Increase time
         time = time + dt
+
+
+        potential_new = pot_energy_dw(Plist)
+        kintic_new = kinetic_energy_dw(Plist)
+        energy_new = total_energy(potential_new, kintic_new)
         
 
         # Append information to data lists
 
         time_list.append(time)
-        pos_list.append([o.position for o in Plist])
+        for o in Plist:
+            pos_list.append(o.position) 
+        energy_list.append(energy_new)
 
-        #print(pos_list)
-
-        # write in the output file
+        #write in the output file
     
-        outfile.write("10\n")
+        outfile.write(str(no_parts)+"\n")
         outfile.write("point = %d\r\n" % (i+1))
         for p in Plist:
-            #print(str(p)
+
             outfile.write(str(p)+"\n")
      
     # Post-simulation:
-    
+    #print(pos_list[1000])
+    earth = str("Earth")
+    pos_list_earth = pos_list_each(Plist, pos_list, earth)
+    #period_earth = period(pos_list_earth, time_list)
+    #print(pos_list_earth)
+    #print(pos_array_in)
+    #print(period_earth)
     # Close all files
-    #outfile.close()
-    #in_file.close()
-    #sim_param.close()
+    outfile.close()
+    in_file.close()
+    sim_param.close()
 
     
 
